@@ -21,3 +21,17 @@ ASP.NET Core Web API deployed on Azure Container Apps.
 ## Deployment
 
 Docker image is hosted on Azure Container Registry and deployed via Azure Container Apps.
+
+## Screenshots
+
+**Live App**
+![App](docs/screenshots/app.png)
+
+**Azure Container Registry**
+![ACR](docs/screenshots/acr-repository.png)
+
+**Container App Overview**
+![Container App](docs/screenshots/container-app-overview.png)
+
+**Container Registry**
+![Registry](docs/screenshots/container-registry.png)
