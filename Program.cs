@@ -13,6 +13,21 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 var app = builder.Build();
 
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.EnsureCreated();
+    if (!db.Products.Any())
+    {
+        db.Products.AddRange(
+            new Product { Name = "Laptop", Price = 999.99m, Stock = 10 },
+            new Product { Name = "Mouse", Price = 29.99m, Stock = 50 },
+            new Product { Name = "Keyboard", Price = 49.99m, Stock = 30 }
+        );
+        db.SaveChanges();
+    }
+}
+
 app.MapGet("/", () => Results.Content("""
 <!DOCTYPE html>
 <html>
