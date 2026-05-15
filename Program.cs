@@ -1,44 +1,17 @@
+using Microsoft.EntityFrameworkCore;
+using Azure.Identity;
+
 var builder = WebApplication.CreateBuilder(args);
 
+var keyVaultUri = new Uri("https://kv-sales-api-neu-001.vault.azure.net/");
+
+builder.Configuration.AddAzureKeyVault(keyVaultUri, new DefaultAzureCredential());
+
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"),
+        sqlOptions => sqlOptions.EnableRetryOnFailure()));
+
 var app = builder.Build();
-
-var products = new List<Product>
-{
-    new Product(1, "Laptop", 999.99m, 10),
-    new Product(2, "Mouse", 29.99m, 50),
-    new Product(3, "Keyboard", 49.99m, 30)
-};
-
-app.MapGet("/products", () => products);
-
-app.MapGet("/products/{id}", (int id) =>
-{
-    var product = products.FirstOrDefault(p => p.Id == id);
-    return product is null ? Results.NotFound() : Results.Ok(product);
-});
-
-app.MapPost("/products", (Product product) =>
-{
-    products.Add(product);
-    return Results.Created($"/products/{product.Id}", product);
-});
-
-app.MapPut("/products/{id}", (int id, Product updated) =>
-{
-    var product = products.FirstOrDefault(p => p.Id == id);
-    if (product is null) return Results.NotFound();
-    products.Remove(product);
-    products.Add(updated);
-    return Results.Ok(updated);
-});
-
-app.MapDelete("/products/{id}", (int id) =>
-{
-    var product = products.FirstOrDefault(p => p.Id == id);
-    if (product is null) return Results.NotFound();
-    products.Remove(product);
-    return Results.NoContent();
-});
 
 app.MapGet("/", () => Results.Content("""
 <!DOCTYPE html>
@@ -72,6 +45,46 @@ app.MapGet("/", () => Results.Content("""
 </html>
 """, "text/html"));
 
+app.MapGet("/products", async (AppDbContext db) => await db.Products.ToListAsync());
+
+app.MapGet("/products/{id}", async (int id, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+    return product is null ? Results.NotFound() : Results.Ok(product);
+});
+
+app.MapPost("/products", async (Product product, AppDbContext db) =>
+{
+    db.Products.Add(product);
+    await db.SaveChangesAsync();
+    return Results.Created($"/products/{product.Id}", product);
+});
+
+app.MapPut("/products/{id}", async (int id, Product updated, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+    product.Name = updated.Name;
+    product.Price = updated.Price;
+    product.Stock = updated.Stock;
+    return Results.Ok(product);
+});
+
+app.MapDelete("/products/{id}", async (int id, AppDbContext db) =>
+{
+    var product = await db.Products.FindAsync(id);
+    if (product is null) return Results.NotFound();
+    db.Products.Remove(product);
+    await db.SaveChangesAsync();
+    return Results.NoContent();
+});
+
 app.Run();
 
-record Product(int Id, string Name, decimal Price, int Stock);
+public class Product
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public int Stock { get; set; }
+}
