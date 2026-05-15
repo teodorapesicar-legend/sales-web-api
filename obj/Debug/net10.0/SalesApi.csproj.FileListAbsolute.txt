@@ -31,3 +31,4 @@ C:\Users\Lenovo\SalesApi\obj\Debug\net10.0\refint\SalesApi.dll
 C:\Users\Lenovo\SalesApi\obj\Debug\net10.0\SalesApi.pdb
 C:\Users\Lenovo\SalesApi\obj\Debug\net10.0\SalesApi.genruntimeconfig.cache
 C:\Users\Lenovo\SalesApi\obj\Debug\net10.0\ref\SalesApi.dll
+C:\Users\Lenovo\SalesApi\obj\Debug\net10.0\SalesApi.sourcelink.json

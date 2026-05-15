@@ -40,6 +40,38 @@ app.MapDelete("/products/{id}", (int id) =>
     return Results.NoContent();
 });
 
+app.MapGet("/", () => Results.Content("""
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sales API</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h1>Products</h1>
+    <table id="table">
+        <tr><th>ID</th><th>Name</th><th>Price</th><th>Stock</th></tr>
+    </table>
+    <script>
+        fetch('/products')
+            .then(r => r.json())
+            .then(data => {
+                const table = document.getElementById('table');
+                data.forEach(p => {
+                    table.innerHTML += `<tr><td>${p.id}</td><td>${p.name}</td><td>${p.price}</td><td>${p.stock}</td></tr>`;
+                });
+            });
+    </script>
+</body>
+</html>
+""", "text/html"));
+
 app.Run();
 
 record Product(int Id, string Name, decimal Price, int Stock);
